@@ -44,7 +44,7 @@ def main(_):
     damp = 0.8  # damping factor
     K = 10  # number of power iterations
 
-    graph = dgl.DGLGraph(nx.nx.erdos_renyi_graph(N, 0.1, seed=333))
+    graph = dgl.DGLGraph(nx.nx.connected_watts_strogatz_graph(N, k=3, p=0.1, seed=999))
     graph.ndata['pv'] = (torch.ones(N, 1) / N).to(device)
     graph.ndata['deg'] = graph.out_degrees(graph.nodes()).float().view(N, 1).to(device)
     # draw_dgl_graph(graph)

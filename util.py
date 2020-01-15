@@ -1,7 +1,6 @@
 import dgl
 import networkx as nx
 import matplotlib.pyplot as plt
-import ipdb
 
 
 def draw_dgl_graph(graph: dgl.DGLGraph) -> None:
