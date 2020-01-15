@@ -3,7 +3,6 @@ import dgl
 import dgl.function as fn
 import networkx as nx
 import torch
-import matplotlib.pyplot as plt
 import ipdb
 
 from util import *
@@ -55,7 +54,7 @@ def main(_):
 
     personalization = torch.zeros(N, 1)
     personalization[0] = 0.5
-    personalization[1] = 0.5
+    personalization[9] = 0.5
 
     for i in range(K):
         pagerank_helper(device, graph, personalization=personalization, damp=damp)
