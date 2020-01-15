@@ -39,11 +39,15 @@ def main(_):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)
 
-    N = 10  # number of nodes
-    damp = 0.8  # damping factor
+    N = 100  # number of nodes
+    damp = 0.5  # damping factor
     K = 10  # number of power iterations
 
-    graph = dgl.DGLGraph(nx.nx.connected_watts_strogatz_graph(N, k=3, p=0.1, seed=999))
+    graph = dgl.DGLGraph()
+    graph.add_nodes(100)
+    graph.add_edges([i for i in range(6, 100)] + [1, 5, 3, 4, 5, 1], [4] * 94 + [0, 0, 2, 2, 2, 3])
+    graph.add_edges([4] * 94 + [0, 0, 2, 2, 2, 1], [i for i in range(6, 100)] + [1, 5, 3, 4, 5, 3])
+    # graph = dgl.DGLGraph(nx.nx.connected_watts_strogatz_graph(N, k=3, p=0.1, seed=999))
     graph.ndata['pv'] = (torch.ones(N, 1) / N).to(device)
     graph.ndata['deg'] = graph.out_degrees(graph.nodes()).float().view(N, 1).to(device)
     # draw_dgl_graph(graph)
@@ -54,7 +58,7 @@ def main(_):
 
     personalization = torch.zeros(N, 1)
     personalization[0] = 0.5
-    personalization[9] = 0.5
+    personalization[1] = 0.5
 
     for i in range(K):
         pagerank_helper(device, graph, personalization=personalization, damp=damp)
