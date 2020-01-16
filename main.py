@@ -60,23 +60,23 @@ def main(_):
 
     batch_graph = dgl.batch([graph, graph_2])
 
-    # print(graph.adjacency_matrix())
-
-    print("graph prepared")
+    print("Graph prepared.")
 
     personalization = torch.zeros(batch_graph.number_of_nodes(), 1)
     personalization[0] = 0.5
     personalization[1] = 0.5
 
-    # the below to are first and second node for graph_2
+    # the below two are first and second node for graph_2
     personalization[10] = 0.5
     personalization[11] = 0.5
 
     for i in range(K):
         pagerank_helper(device, batch_graph, personalization=personalization, damp=damp)
-        # TODO change pagerank_helper to receive pv as input, not implicitly retrieving from the graph itself.
 
     print(batch_graph.ndata['pv'])
+    # Todo unbatch the batch, and retrieve pv tensors from them.
+    #      or just leave them as batch, retrieve pv tensor as concatenated, then slice them according to sizes
+
     draw_dgl_graph(batch_graph)
 
 
