@@ -40,31 +40,44 @@ def main(_):
     print(device)
 
     N = 100  # number of nodes
+    N_2 = 10  # number of the second graph's nodes
     damp = 0.5  # damping factor
     K = 10  # number of power iterations
 
-    graph = dgl.DGLGraph()
-    graph.add_nodes(100)
-    graph.add_edges([i for i in range(6, 100)] + [1, 5, 3, 4, 5, 1], [4] * 94 + [0, 0, 2, 2, 2, 3])
-    graph.add_edges([4] * 94 + [0, 0, 2, 2, 2, 1], [i for i in range(6, 100)] + [1, 5, 3, 4, 5, 3])
-    # graph = dgl.DGLGraph(nx.nx.connected_watts_strogatz_graph(N, k=3, p=0.1, seed=999))
-    graph.ndata['pv'] = (torch.ones(N, 1) / N).to(device)
-    graph.ndata['deg'] = graph.out_degrees(graph.nodes()).float().view(N, 1).to(device)
-    # draw_dgl_graph(graph)
+    # graph = dgl.DGLGraph()
+    # graph.add_nodes(100)
+    # graph.add_edges([i for i in range(6, 100)] + [1, 5, 3, 4, 5, 1], [4] * 94 + [0, 0, 2, 2, 2, 3])
+    # graph.add_edges([4] * 94 + [0, 0, 2, 2, 2, 1], [i for i in range(6, 100)] + [1, 5, 3, 4, 5, 3])
+    # graph.ndata['pv'] = (torch.ones(N, 1) / N).to(device)
+    # graph.ndata['deg'] = graph.out_degrees(graph.nodes()).float().view(N, 1).to(device)
 
-    print(graph.adjacency_matrix())
+    graph = dgl.DGLGraph(nx.nx.star_graph(N_2 - 1))
+    graph.ndata['pv'] = (torch.ones(N_2, 1) / N_2).to(device)
+    graph.ndata['deg'] = graph.out_degrees(graph.nodes()).float().view(N_2, 1).to(device)
+    graph_2 = dgl.DGLGraph(nx.nx.connected_watts_strogatz_graph(N_2, k=3, p=0.1, seed=999))
+    graph_2.ndata['pv'] = (torch.ones(N_2, 1) / N_2).to(device)
+    graph_2.ndata['deg'] = graph_2.out_degrees(graph_2.nodes()).float().view(N_2, 1).to(device)
+
+    batch_graph = dgl.batch([graph, graph_2])
+
+    # print(graph.adjacency_matrix())
 
     print("graph prepared")
 
-    personalization = torch.zeros(N, 1)
+    personalization = torch.zeros(batch_graph.number_of_nodes(), 1)
     personalization[0] = 0.5
     personalization[1] = 0.5
 
-    for i in range(K):
-        pagerank_helper(device, graph, personalization=personalization, damp=damp)
+    # the below to are first and second node for graph_2
+    personalization[10] = 0.5
+    personalization[11] = 0.5
 
-    print(graph.ndata['pv'])
-    draw_dgl_graph(graph)
+    for i in range(K):
+        pagerank_helper(device, batch_graph, personalization=personalization, damp=damp)
+        # TODO change pagerank_helper to receive pv as input, not implicitly retrieving from the graph itself.
+
+    print(batch_graph.ndata['pv'])
+    draw_dgl_graph(batch_graph)
 
 
 if __name__ == "__main__":
